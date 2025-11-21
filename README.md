@@ -222,4 +222,7 @@ Pour tester l’ensemble des sorties du GPIO Expander, nous avons implémenté u
 
 ![Test 2b](Test2b.jpeg)
 
+![Test 2b](Test2b.gif)
+
+
 
