@@ -92,6 +92,7 @@ xTaskCreate(
     NULL
 );
 ```
+![Shell 1a](Shell1a.png)
 
  **Fonctionnement de la tâche ShellTask**
  ```
@@ -130,7 +131,10 @@ int sh_blink(int argc, char **argv)
     return 0;
 }
 ```
-**Résultat obtenu dans Tera Term**
+![Shell 2a](Shell2a.png)
+
+**Résultat obtenu dans Tera Term:**
+![Shell 3a](Shell3a.png)
 
 
 
