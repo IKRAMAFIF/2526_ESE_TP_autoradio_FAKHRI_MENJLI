@@ -213,13 +213,13 @@ Voici la capture de configuration utilisée :
 
 Pour tester le fonctionnement du GPIO Expander (MCP23S17), nous avons commencé par allumer et éteindre une LED connectée au module via SPI.
 
-![Test 2a](Test1a.jpeg)
+![Test 2a](Test2a.jpeg)
 
 
 ### 2.2.2 Tester toutes les LED (chenillard)
 
 Pour tester l’ensemble des sorties du GPIO Expander, nous avons implémenté un chenillard, c’est-à-dire une LED qui avance de bit en bit.
 
-![Test 2b](Test2a.jpeg)
+![Test 2b](Test2b.jpeg)
 
 
