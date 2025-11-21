@@ -156,6 +156,7 @@ static char uart_read() {
     return (char)rxbuffer;
 }
 ```
+![Shell 1b](Shell1b.jpeg)
 
 - L’interruption donne le sémaphore pour réveiller la tâche Shell :
 
@@ -173,6 +174,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 }
 ```
+![Shell 2b](Shell2b.jpeg)
+
 - Création du sémaphore + lancement de la tâche :
   
 ```
@@ -190,11 +193,28 @@ if (uartRxSemaphore == NULL)
 
 vTaskStartScheduler();
 ```
+![Shell 3b](Shell3b.jpeg)
+
+- Résultat sur Tera Term (réception OK via interruptions)
+
+![Shell 4b](Shell4b.jpeg)
+
+###   1.6.c  –Fonctionnement du Shell avec un driver
+Dans cette version, le shell n’utilise plus directement les fonctions UART ni le sémaphore.  
+Toutes les opérations d’entrée/sortie sont encapsulées dans une **structure driver**, ce qui rend le shell plus modulable et indépendant du matériel.
+
+Le shell est maintenant contrôlé via les deux pointeurs de fonctions :
+- `drv.receive` pour lire un caractère  
+- `drv.transmit` pour envoyer une chaîne
+
+- Initialisation du driver:
+
+- Commande associée : fonction()
+ Cette fonction envoie un message via le driver, sans utiliser printf :
 
 
-
-
-
+- Résultat obtenu dans Tera Term
+Le shell utilise bien le driver pour transmettre la réponse :
 
 
 
