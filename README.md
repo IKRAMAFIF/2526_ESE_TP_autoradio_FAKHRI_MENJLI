@@ -75,7 +75,7 @@ Voici la configuration utilisée :
 Un shell interactif a été ajouté afin de permettre l’envoi de commandes via le terminal (Tera Term).  
 Ce shell fonctionne sur l’USART2 et permet d’exécuter différentes actions.
 
-### 1.6.1 Shell exécuté dans une tâche FreeRTOS
+### 1.6.a Shell exécuté dans une tâche FreeRTOS
 
 Dans un premier temps, le shell a été exécuté directement dans une tâche FreeRTOS dédiée.  
 Cette approche permet au shell de tourner en continu, en lisant les caractères reçus sur l’USART2 via `shell_run()`.
@@ -92,9 +92,9 @@ xTaskCreate(
     NULL
 );
 ```
-![Shell 1a](Shell1a.png)
+![Shell 1a](Shell1a.jpeg)
 
- **Fonctionnement de la tâche ShellTask**
+- **Fonctionnement de la tâche ShellTask**
  ```
 void ShellTask(void *pvParameters)
 {
@@ -108,7 +108,7 @@ void ShellTask(void *pvParameters)
     vTaskDelete(NULL);
 }
 ```
-**Commande (Toggle LED)**
+- **Commande (Toggle LED)**
 ```
 int sh_led(int argc, char **argv)
 {
@@ -122,7 +122,7 @@ int sh_led(int argc, char **argv)
     return 0;
 }
 ```
-**Commande (Blink LED)**
+- **Commande (Blink LED)**
 ```
 int sh_blink(int argc, char **argv)
 {
@@ -131,11 +131,65 @@ int sh_blink(int argc, char **argv)
     return 0;
 }
 ```
-![Shell 2a](Shell2a.png)
+![Shell 2a](Shell2a.jpeg)
 
-**Résultat obtenu dans Tera Term:**
-![Shell 3a](Shell3a.png)
+- **Résultat obtenu dans Tera Term:**
 
+![Shell 3a](Shell3a.jpeg)
+
+
+###   1.6.b  – Fonctionnement du Shell en interruption + sémaphore FreeRTOS
+
+Dans cette version, la réception UART ne se fait plus en mode bloquant, mais via une **interruption**.  
+Chaque caractère reçu déclenche une **IT UART**, qui réveille la tâche du shell grâce à un **sémaphore binaire**.
+
+Ce mécanisme nous permet d’éviter de bloquer la tâche, d’avoir une meilleure réactivité, et d’être compatible avec FreeRTOS.
+
+- À chaque appel, la fonction déclenche une réception IT et attend le sémaphore :
+
+```c
+static char uart_read() {
+
+    HAL_UART_Receive_IT(&huart2, &rxbuffer, 1);
+    xSemaphoreTake(uartRxSemaphore, HAL_MAX_DELAY);
+
+    return (char)rxbuffer;
+}
+```
+
+- L’interruption donne le sémaphore pour réveiller la tâche Shell :
+
+```
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        xSemaphoreGiveFromISR(uartRxSemaphore, &xHigherPriorityTaskWoken);
+        HAL_UART_Receive_IT(&huart2, &rxbuffer, 1);
+
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+```
+- Création du sémaphore + lancement de la tâche :
+  
+```
+  if (xTaskCreate(ShellTask,"shell", 256, NULL,1, &h_shell_task)!=pdPASS)
+{
+    printf("error creation task shell\r\n");
+    Error_Handler();
+}
+
+uartRxSemaphore = xSemaphoreCreateBinary();
+if (uartRxSemaphore == NULL)
+{
+    Error_Handler();
+}
+
+vTaskStartScheduler();
+```
 
 
 
