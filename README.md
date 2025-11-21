@@ -52,6 +52,8 @@ int __io_putchar(int chr)
 }
 
 ## 🔹 1.5 Activation FreeRTOS (CMSIS V1)
+![Activation FreeRTOS](Activation FreeRTOS.png)
+
 
 FreeRTOS a été activé afin d’organiser le projet autour de tâches concurrentes.
 
