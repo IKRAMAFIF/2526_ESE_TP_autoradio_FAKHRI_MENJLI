@@ -35,22 +35,32 @@ HAL_Delay(500);
 
 
 
-## 🔹 1.3 Test UART2 → Affichage Terminal
+## 🔹 1.3 Test UART2 
 
-Test d’envoi d’une chaîne via l’USART2 :
-
-HAL_UART_Transmit(&huart2, (uint8_t*)"Hello\r\n", 7, HAL_MAX_DELAY);
-
+TPour tester la communication série entre la carte NUCLEO-L476RG et le PC via la STLink, nous avons envoyé régulièrement une chaîne de caractères sur l’USART2.
+```
+while (1)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)"Hello\r\n", 7, HAL_MAX_DELAY);
+    HAL_Delay(500);
+}
+```
 ## 🔹 1.4 Activation de printf
 
-Redirection de l’affichage vers l’UART2 :
-
+Pour permettre l’utilisation de `printf` via l’USART2, nous avons redirigé la sortie standard vers l’UART.
+Ajout de la fonction suivante :
+```
 int __io_putchar(int chr)
 {
     HAL_UART_Transmit(&huart2, (uint8_t*)&chr, 1, HAL_MAX_DELAY);
     return chr;
 }
+```
+Test d’affichage :
 
+```
+printf("Test printf sur USART2 !\r\n");
+```
 ## 🔹 1.5 Activation FreeRTOS (CMSIS V1)
 ![Activation FreeRTOS](Activation%20FreeRTOS.png)
 
