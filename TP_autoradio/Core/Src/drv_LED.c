@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "main.h"
 extern SPI_HandleTypeDef hspi3;
+extern LED_Driver_t led_driver;
 
 void write_MCP23017(uint8_t registre, uint8_t value)
 {
@@ -70,4 +71,49 @@ driver->read = read_MCP23S17;
 driver->chenillard = LED_Chenillard;
 driver->blink_all = Blink_LEDs;
 driver->init();
+}
+
+int shell_control_led(h_shell_t *h_shell, int argc, char **argv) {
+
+	if (argc != 4) {
+		snprintf(h_shell->print_buffer, BUFFER_SIZE, "Usage: l <port> <pin> <state>\r\n");
+		h_shell->drv.transmit(h_shell->print_buffer, strlen(h_shell->print_buffer));
+		return -1;
+	}
+
+
+	char port = argv[1][0];
+	int pin = atoi(argv[2]);
+	int state = atoi(argv[3]);
+
+
+	if ((port != 'A' && port != 'B') || pin < 0 || pin > 7 || (state != 0 && state != 1)) {
+		snprintf(h_shell->print_buffer, BUFFER_SIZE, "Invalid arguments\r\n");
+		h_shell->drv.transmit(h_shell->print_buffer, strlen(h_shell->print_buffer));
+		return -1;
+	}
+
+
+	uint8_t reg = (port == 'A') ? 0x13 : 0x12;
+	uint8_t current_state = 0;
+
+
+	if (led_driver.read) {
+		current_state = led_driver.read(reg);
+	}
+
+
+	if (state == 1) {
+		current_state &= ~(1 << pin);
+	} else {
+		current_state |= (1 << pin);
+	}
+
+	led_driver.write(reg, current_state);
+
+
+	snprintf(h_shell->print_buffer, BUFFER_SIZE, "LED %c%d %s\r\n", port, pin, state ? "ON" : "OFF");
+	h_shell->drv.transmit(h_shell->print_buffer, strlen(h_shell->print_buffer));
+
+	return 0;
 }
