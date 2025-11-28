@@ -367,33 +367,23 @@ La communication I2C et la lecture du CHIP_ID ont été validées.
 
 #### 3.2.5 Recherche des valeurs des registres dans la datasheet
 
-Nous avons ensuite collecté, dans la documentation du SGTL5000, les valeurs requises pour la configuration initiale :
+Pour initialiser correctement le CODEC audio **SGTL5000**, nous devons configurer une série de registres essentiels au fonctionnement des blocs analogiques, numériques et de l’interface I2S.  
+Les valeurs ci-dessous proviennent de la documentation constructeur.
 
-- CHIP_ANA_POWER
-
-- CHIP_LINREG_CTRL
-
-- CHIP_REF_CTRL
-
-- CHIP_LINE_OUT_CTRL
-
-- CHIP_SHORT_CTRL
-
-- CHIP_ANA_CTRL
-
-- CHIP_ANA_POWER
-
-- CHIP_DIG_POWER
-
-- CHIP_LINE_OUT_VOL
-
-- CHIP_CLK_CTRL
-
-- CHIP_I2S_CTRL
-
-- CHIP_ADCDAC_CTRL
-
-- CHIP_DAC_VOL
+| Registre               | Valeur  | Description |
+|------------------------|---------|-------------|
+| **CHIP_ANA_POWER**     | `0x6AFF` | Activation des blocs analogiques principaux |
+| **CHIP_LINREG_CTRL**   | `0x006C` | Configuration du régulateur interne |
+| **CHIP_REF_CTRL**      | `0x004E` | Réglage de la référence analogique |
+| **CHIP_LINE_OUT_CTRL** | `0x0322` | Configuration des sorties ligne |
+| **CHIP_SHORT_CTRL**    | `0x1106` | Protection contre les courts-circuits |
+| **CHIP_ANA_CTRL**      | `0x0133` | Contrôle global des étages analogiques |
+| **CHIP_DIG_POWER**     | `0x0073` | Activation des modules numériques (ADC, DAC, DAP…) |
+| **CHIP_LINE_OUT_VOL**  | `0x0505` | Volume des sorties ligne |
+| **CHIP_CLK_CTRL**      | `0x0002` | Configuration de l’horloge interne |
+| **CHIP_I2S_CTRL**      | `0x0001` | Configuration de l’interface I2S |
+| **CHIP_ADCDAC_CTRL**   | `0x000C` | Activation ADC/DAC et réglages associés |
+| **CHIP_DAC_VOL**       | `0x3C3C` | Volume DAC (Left/Right) |
 
 Ces valeurs seront appliquées dans l’initialisation du CODEC.
 
