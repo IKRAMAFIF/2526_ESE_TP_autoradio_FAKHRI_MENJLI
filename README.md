@@ -263,64 +263,44 @@ Le CODEC SGTL5000 nécessite deux protocoles pour fonctionner :
 **I2S (via SAI2) → transfert des échantillons audio (lecture & écriture)**
 Toutes ces configurations sont réalisées dans STM32CubeIDE / CubeMX.
 
-#### 3.1.1/2 Configuration de l’I2C
+**Configuration de l’I2C**
 - Pins utilisées pour l’I2C
 
 Sur notre carte STM32L476RG, l’I2C utilisé pour communiquer avec le CODEC passe par :
-PB10 → I2C2_SCL
-PB11 → I2C2_SDA
+PB10 → I2C2_SCL et PB11 → I2C2_SDA
 
-![I2C Pins](ActivationI2C.png)
+![I2C Pins](assets/ActivationI2C.jpeg)
 
- 3.1.3 Configuration du SAI2 (I2S)
+ **Configuration du SAI2 (I2S)**
 
 Le CODEC audio utilise I2S, fourni par le périphérique SAI2 du STM32.
 Configuration du SAI A
-Mode : Master with Master Clock Out
-Protocole : I2S/PCM
-Configuration du SAI B
-Mode : Synchronous Slave
-Protocole : I2S/PCM
- Capture SAI2 Config
 
-![SAI2 Config](SAI2_Config.png)
+![SAI2 Config](assets/SAI2_Config.jpeg)
 
  3.1.4 Affectation des broches SAI
 
 Les broches doivent correspondre EXACTEMENT à celles du CODEC.
 
 Signal SAI2	Broche STM32
+
 FS_A	PB12
+
 SCK_A	PB13
+
 MCLK_A	PB14
+
 SD_A	PB15
+
 SD_B	PC12
 
- 3.1.5 Configuration de la Clock – PLLSAI1 = 12.235294 MHz
+ **Configuration de la Clock – PLLSAI1 = 12.235294 MHz**
 
 Pour que le CODEC fonctionne, il doit recevoir une horloge MCLK précise.
 Nous configurons donc PLLSAI1 pour générer : 12.235294 MHz pour SAI2
- Capture PLLSAI1
 
-![PLLSAI Clock Config](PLLSAI_Config.png)
+![PLLSAI Clock Config](assets/PLLSAI_Config.jpeg)
 
- 3.1.6 Configuration des blocs SAI A et SAI B
-
-Les blocs SAI sont configurés comme suit :
-
- SAI A
-
-Mode : Master
-Protocole : I2S
-Fournit MCLK, SCK, FS, SD_A
-
- SAI B
-
-Mode : Synchronous Slave
-
-Protocole : I2S
-
-Fournit SD_B
 
 **Activation des interruptions**
 
