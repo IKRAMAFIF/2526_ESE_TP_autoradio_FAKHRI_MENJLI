@@ -61,7 +61,7 @@ printf("Test printf sur USART2 !\r\n");
 ```
 L’affichage des messages dans le terminal série confirme le bon fonctionnement de l’USART2, comme présenté ci-dessous:
 
-![Test Affichage](Test_AffichageTeraTerm.jpeg)
+![Test Affichage](assets/Test_AffichageTeraTerm.jpeg)
 
 
 ##  1.5 Activation FreeRTOS (CMSIS V1)
@@ -69,7 +69,7 @@ FreeRTOS a été activé depuis STM32CubeMX en utilisant l’interface **CMSIS V
 Cette étape permet d’organiser l’application autour de plusieurs tâches gérées par l’ordonnanceur FreeRTOS.
 
 Voici la configuration utilisée :
-![Activation FreeRTOS](Activation%20FreeRTOS.png)
+![Activation FreeRTOS](assets/Activation%20FreeRTOS.png)
 
 ##  1.6 Mise en place d’un Shell fonctionnel
 Un shell interactif a été ajouté afin de permettre l’envoi de commandes via le terminal (Tera Term).  
@@ -82,7 +82,7 @@ Cette approche permet au shell de tourner en continu, en lisant les caractères 
 
 La tâche a été créée avec la fonction `xTaskCreate` :
 
-![Shell 1a](Shell1a.jpeg)
+![Shell 1a](assets/Shell1a.jpeg)
 
 - **Fonctionnement de la tâche ShellTask**
  ```
@@ -121,11 +121,11 @@ int sh_blink(int argc, char **argv)
     return 0;
 }
 ```
-![Shell 2a](Shell2a.jpeg)
+![Shell 2a](assets/Shell2a.jpeg)
 
 - **Résultat obtenu dans Tera Term:**
 
-![Shell 3a](Shell3a.jpeg)
+![Shell 3a](assets/Shell3a.jpeg)
 
 
 ### 1.6.b  – Fonctionnement du Shell en interruption + sémaphore FreeRTOS
@@ -137,19 +137,19 @@ Ce mécanisme nous permet d’éviter de bloquer la tâche, d’avoir une meille
 
 - À chaque appel, la fonction déclenche une réception IT et attend le sémaphore :
 
-![Shell 1b](Shell1b.jpeg)
+![Shell 1b](assets/Shell1b.jpeg)
 
 - L’interruption donne le sémaphore pour réveiller la tâche Shell :
 
-![Shell 2b](Shell2b.jpeg)
+![Shell 2b](assets/Shell2b.jpeg)
 
 - Création du sémaphore + lancement de la tâche :
   
-![Shell 3b](Shell3b.jpeg)
+![Shell 3b](assets/Shell3b.jpeg)
 
 - Résultat sur Tera Term (réception OK via interruptions)
 
-![Shell 4b](Shell4b.jpeg)
+![Shell 4b](assets/Shell4b.jpeg)
 
 ###  1.6.c  –Fonctionnement du Shell avec un driver
 Dans cette version, le shell n’utilise plus directement les fonctions UART ni le sémaphore.  
@@ -161,17 +161,17 @@ Le shell est maintenant contrôlé via les deux pointeurs de fonctions :
 
 - Initialisation du driver:
 
-![Shell 1c](Shell1c.jpeg)
+![Shell 1c](assets/Shell1c.jpeg)
 
 - Commande associée : fonction()
  Cette fonction envoie un message via le driver, sans utiliser printf :
 
-![Shell 2c](Shell2c.jpeg)
+![Shell 2c](assets/Shell2c.jpeg)
 
 - Résultat obtenu dans Tera Term
 Le shell utilise bien le driver pour transmettre la réponse :
 
-![Shell 3c](Shell3c.jpeg)
+![Shell 3c](assets/Shell3c.jpeg)
 
 ---
 
@@ -205,7 +205,7 @@ Les paramètres essentiels du SPI3 sont les suivants :
 ### 2.1.4 Configuration effectuée
 Voici la capture de configuration utilisée :
 
-![Configuration SPI](ConfigurationSPI.jpeg)
+![Configuration SPI](assets/ConfigurationSPI.jpeg)
 
 ## 2.2 Tests
 
@@ -213,16 +213,16 @@ Voici la capture de configuration utilisée :
 
 Pour tester le fonctionnement du GPIO Expander (MCP23S17), nous avons commencé par allumer et éteindre une LED connectée au module via SPI.
 
-![Test 2a](Test2a.jpeg)
+![Test 2a](assets/Test2a.jpeg)
 
 
 ### 2.2.2 Tester toutes les LED (chenillard)
 
 Pour tester l’ensemble des sorties du GPIO Expander, nous avons implémenté un chenillard, c’est-à-dire une LED qui avance de bit en bit.
 
-![Test 2b](Test2b.jpeg)
+![Test 2b](assets/Test2b.jpeg)
 
-![Test 2b](Test2b.gif)
+![Test 2b](assets/Test2b.gif)
 
 
 
