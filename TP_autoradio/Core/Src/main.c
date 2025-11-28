@@ -32,7 +32,8 @@
 #include <stdio.h>
 #include "shell.h"
 #include "drv_uart2.h"
-#include"drv_LED.h"
+#include "drv_LED.h"
+#include "sgtl5000.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,6 +59,7 @@ SemaphoreHandle_t uartRxSemaphore;
 h_shell_t h_shell;
 extern SPI_HandleTypeDef hspi3;
 LED_Driver_t led_driver;
+h_sgtl5000_t sgtl5000_handle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -139,6 +141,24 @@ void Task_Chenillard(void *unused)
 	}
 }
 
+/*Configuration du CODEC par l’I2C question 2
+void task_read_CHIP_ID(void *unused) {
+	uint8_t SGTL5000_I2C_ADDR = 0x14;
+	uint8_t CHIP_ID_Value[2];
+	uint16_t CHIP_ID_Reg = 0x0000;
+
+	HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, SGTL5000_I2C_ADDR,
+			CHIP_ID_Reg, I2C_MEMADD_SIZE_16BIT,
+			CHIP_ID_Value, 2, 1000);
+
+	if (status == HAL_OK) {
+		printf("CHIP_ID = 0x%02X%02X\n", CHIP_ID_Value[0], CHIP_ID_Value[1]);
+	} else {
+		printf("Erreur de lecture CHIP_ID : %d\n", status);
+
+	}
+}*/
+
 /* USER CODE END 0 */
 
 /**
@@ -179,7 +199,10 @@ int main(void)
   MX_I2C2_Init();
   MX_SAI2_Init();
   /* USER CODE BEGIN 2 */
-
+  __HAL_SAI_ENABLE(&hsai_BlockA2);
+    sgtl5000_handle.hi2c = &hi2c2;
+    sgtl5000_handle.i2c_address = SGTL5000_I2C_ADDR_WRITE;
+    sgtl5000_init(&sgtl5000_handle);
 
     // question 6
 	/*if (xTaskCreate(ShellTask,"shell", 256, NULL,1, &h_shell_task)!=pdPASS)
@@ -187,8 +210,6 @@ int main(void)
       printf("error creation task shell\r\n");
       Error_Handler();
      }
-
-
      uartRxSemaphore = xSemaphoreCreateBinary();
      if (uartRxSemaphore == NULL)
      {
@@ -198,6 +219,7 @@ int main(void)
 
 	xTaskCreate(Task_Chenillard,"Task_Chenillard", 256, NULL, 1, NULL);
 	xTaskCreate(Task_control_Led,"Task_control_led", 256, NULL, 2, NULL);
+	//xTaskCreate(task_read_CHIP_ID,"task_read_CHIP_ID", 256, NULL, 3, NULL);
 	vTaskStartScheduler();
 
 	/*h_shell.drv.receive = drv_uart2_receive;
