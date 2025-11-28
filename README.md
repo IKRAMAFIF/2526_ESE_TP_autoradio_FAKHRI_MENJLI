@@ -224,5 +224,118 @@ Pour tester l’ensemble des sorties du GPIO Expander, nous avons implémenté u
 
 ![Test 2b](assets/Test2b.gif)
 
+## 2.3 Driver
+
+Dans cette partie, nous avons créé un **driver générique** permettant de contrôler les LED connectées au GPIO Expander **MCP23S17** via SPI.  
+L'objectif est de séparer la logique applicative (shell) de la couche matérielle (SPI + MCP23S17).
+
+### 2.3.1 Structure du driver
+
+Le driver est implémenté à l’aide d’une structure contenant deux fonctions principales :
+- écriture dans un registre du MCP23S17
+- contrôle d’une LED (ON/OFF)
+
+```c
+typedef struct {
+    void (*write)(uint8_t reg, uint8_t value);
+    void (*set_pin)(char port, uint8_t pin, uint8_t state);
+} led_driver_t;
+
+led_driver_t drv_led;
+```
+
+### 2.3.1 Fonction shell pour allumer/éteindre n’importe quelle LED
+
+Pour répondre à cette question, nous avons créé une fonction shell permettant de contrôler une LED le périphérique GPIO Expander MCP23S17 via une commande shell.
+
+A 2 1 → LED A2 ON
+A 1 0 → LED A1 OFF
+
+![Driver](assets/Driver.jpeg)
+
+
+
+## 3. Le CODEC Audio SGTL5000
+### 3.1 Configuration préalables
+
+Le CODEC SGTL5000 nécessite deux protocoles pour fonctionner :
+**I2C → configuration des registres internes du CODEC**
+**I2S (via SAI2) → transfert des échantillons audio (lecture & écriture)**
+Toutes ces configurations sont réalisées dans STM32CubeIDE / CubeMX.
+
+#### 3.1.1/2 Configuration de l’I2C
+- Pins utilisées pour l’I2C
+
+Sur notre carte STM32L476RG, l’I2C utilisé pour communiquer avec le CODEC passe par :
+PB10 → I2C2_SCL
+PB11 → I2C2_SDA
+
+![I2C Pins](ActivationI2C.png)
+
+ 3.1.3 Configuration du SAI2 (I2S)
+
+Le CODEC audio utilise I2S, fourni par le périphérique SAI2 du STM32.
+Configuration du SAI A
+Mode : Master with Master Clock Out
+Protocole : I2S/PCM
+Configuration du SAI B
+Mode : Synchronous Slave
+Protocole : I2S/PCM
+ Capture SAI2 Config
+
+![SAI2 Config](SAI2_Config.png)
+
+ 3.1.4 Affectation des broches SAI
+
+Les broches doivent correspondre EXACTEMENT à celles du CODEC.
+
+Signal SAI2	Broche STM32
+FS_A	PB12
+SCK_A	PB13
+MCLK_A	PB14
+SD_A	PB15
+SD_B	PC12
+
+ 3.1.5 Configuration de la Clock – PLLSAI1 = 12.235294 MHz
+
+Pour que le CODEC fonctionne, il doit recevoir une horloge MCLK précise.
+Nous configurons donc PLLSAI1 pour générer : 12.235294 MHz pour SAI2
+ Capture PLLSAI1
+
+![PLLSAI Clock Config](PLLSAI_Config.png)
+
+ 3.1.6 Configuration des blocs SAI A et SAI B
+
+Les blocs SAI sont configurés comme suit :
+
+ SAI A
+
+Mode : Master
+Protocole : I2S
+Fournit MCLK, SCK, FS, SD_A
+
+ SAI B
+
+Mode : Synchronous Slave
+
+Protocole : I2S
+
+Fournit SD_B
+
+**Activation des interruptions**
+
+Les interruptions du SAI sont ensuite activées pour gérer :
+
+- La réception des samples audio
+- L’envoi automatique via DMA
+
+
+
+
+
+
+
+
+
 
 
