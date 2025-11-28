@@ -224,5 +224,181 @@ Pour tester l’ensemble des sorties du GPIO Expander, nous avons implémenté u
 
 ![Test 2b](assets/Test2b.gif)
 
+## 2.3 Driver
+
+Dans cette partie, nous avons créé un **driver générique** permettant de contrôler les LED connectées au GPIO Expander **MCP23S17** via SPI.  
+L'objectif est de séparer la logique applicative (shell) de la couche matérielle (SPI + MCP23S17).
+
+### 2.3.1 Structure du driver
+
+Le driver est implémenté à l’aide d’une structure contenant deux fonctions principales :
+- écriture dans un registre du MCP23S17
+- contrôle d’une LED (ON/OFF)
+
+```c
+typedef struct {
+    void (*write)(uint8_t reg, uint8_t value);
+    void (*set_pin)(char port, uint8_t pin, uint8_t state);
+} led_driver_t;
+
+led_driver_t drv_led;
+```
+
+### 2.3.1 Fonction shell pour allumer/éteindre n’importe quelle LED
+
+Pour répondre à cette question, nous avons créé une fonction shell permettant de contrôler une LED le périphérique GPIO Expander MCP23S17 via une commande shell.
+
+A 2 1 → LED A2 ON
+
+A 1 0 → LED A1 OFF
+
+**Résultat dans le terminal**
+
+![Driver](assets/Driver.jpeg)
+
+**Résultat sur la carte**
+
+![LED_Board_Output](assets/LED_Board_Output.jpeg)
+
+## 3. Le CODEC Audio SGTL5000
+### 3.1 Configuration préalables
+
+Le CODEC SGTL5000 nécessite deux protocoles pour fonctionner :
+**I2C → configuration des registres internes du CODEC**
+**I2S (via SAI2) → transfert des échantillons audio (lecture & écriture)**
+Toutes ces configurations sont réalisées dans STM32CubeIDE / CubeMX.
+
+**Configuration de l’I2C**
+- Pins utilisées pour l’I2C
+
+Sur notre carte STM32L476RG, l’I2C utilisé pour communiquer avec le CODEC passe par :
+PB10 → I2C2_SCL et PB11 → I2C2_SDA
+
+![I2C Pins](assets/ActivationI2C.jpeg)
+
+ **Configuration du SAI2 (I2S)**
+
+Le CODEC audio utilise I2S, fourni par le périphérique SAI2 du STM32.
+Configuration du SAI A
+
+![SAI2 Config](assets/SAI2_Config.jpeg)
+
+**Affectation des broches SAI**
+
+Les broches doivent correspondre EXACTEMENT à celles du CODEC.
+
+Signal SAI2	Broche STM32
+
+FS_A	PB12
+
+SCK_A	PB13
+
+MCLK_A	PB14
+
+SD_A	PB15
+
+SD_B	PC12
+
+ **Configuration de la Clock – PLLSAI1 = 12.235294 MHz**
+
+Pour que le CODEC fonctionne, il doit recevoir une horloge MCLK précise.
+Nous configurons donc PLLSAI1 pour générer : 12.235294 MHz pour SAI2
+
+![PLLSAI Clock Config](assets/PLLSAI_Config.jpeg)
+
+
+**Activation des interruptions**
+
+Les interruptions du SAI sont ensuite activées pour gérer :
+
+- La réception des samples audio
+- L’envoi automatique via DMA
+
+![DMA_SAI_Config](assets/DMA_SAI_Config.jpeg)
+ 
+### 3.2 Configuration du CODEC SGTL5000 via I2C
+
+Dans cette partie, nous vérifions la communication entre le STM32 et le CODEC audio SGTL5000 grâce au protocole I2C, ainsi que la présence de l’horloge MCLK indispensable au fonctionnement du CODEC.
+
+#### 3.2.1 Vérification de l’horloge MCLK via oscilloscope
+
+Le CODEC ne peut pas fonctionner sans une horloge fournie par le SAI2.
+
+Nous avons mesuré MCLK à l’oscilloscope :
+
+![MCLK_Oscillo](assets/MCLK_Oscillo.jpeg)
+
+Résultat obtenu : ~12.26 MHz, conforme à la valeur attendue après configuration du PLLSAI.
+
+#### 3.2.2 Lecture du registre CHIP_ID via I2C
+
+Nous utilisons la fonction HAL_I2C_Mem_Read() pour lire le registre CHIP_ID (0x0000) du SGTL5000.
+
+L’adresse I2C du CODEC est 0x14.
+
+**Voici le code utilisé :**
+
+![CHIP_ID_CODEl](assets/CHIP_ID_CODE.jpeg)
+
+**Résultat dans le terminal :**
+
+![CHIP_ID_Terminal](assets/CHIP_ID_Terminal.jpeg)
+
+
+#### 3.2.3 Observation des trames I2C à l’oscilloscope
+
+Nous avons ensuite visualisé les trames I2C afin de confirmer :
+
+- la présence du Start condition
+
+- l’adresse du CODEC 0x14
+
+- l’accès en mode lecture
+
+- le retour des données sur SDA
+
+**Trames I2C observées :**
+
+![I2C_Trames](assets/I2C_Trames.jpeg)
+
+#### 3.2.4 Lecture validée par l'enseignant
+
+La communication I2C et la lecture du CHIP_ID ont été validées.
+
+#### 3.2.5 Recherche des valeurs des registres dans la datasheet
+
+Pour initialiser correctement le CODEC audio **SGTL5000**, nous devons configurer une série de registres essentiels au fonctionnement des blocs analogiques, numériques et de l’interface I2S.  
+Les valeurs ci-dessous proviennent de la documentation constructeur.
+
+| Registre               | Valeur  | Description |
+|------------------------|---------|-------------|
+| **CHIP_ANA_POWER**     | `0x6AFF` | Activation des blocs analogiques principaux |
+| **CHIP_LINREG_CTRL**   | `0x006C` | Configuration du régulateur interne |
+| **CHIP_REF_CTRL**      | `0x004E` | Réglage de la référence analogique |
+| **CHIP_LINE_OUT_CTRL** | `0x0322` | Configuration des sorties ligne |
+| **CHIP_SHORT_CTRL**    | `0x1106` | Protection contre les courts-circuits |
+| **CHIP_ANA_CTRL**      | `0x0133` | Contrôle global des étages analogiques |
+| **CHIP_DIG_POWER**     | `0x0073` | Activation des modules numériques (ADC, DAC, DAP…) |
+| **CHIP_LINE_OUT_VOL**  | `0x0505` | Volume des sorties ligne |
+| **CHIP_CLK_CTRL**      | `0x0002` | Configuration de l’horloge interne |
+| **CHIP_I2S_CTRL**      | `0x0001` | Configuration de l’interface I2S |
+| **CHIP_ADCDAC_CTRL**   | `0x000C` | Activation ADC/DAC et réglages associés |
+| **CHIP_DAC_VOL**       | `0x3C3C` | Volume DAC (Left/Right) |
+
+Ces valeurs seront appliquées dans l’initialisation du CODEC.
+
+#### 3.2.6 Création des fichiers sgtl5000.c et sgtl5000.h
+
+Deux fichiers ont été ajoutés afin de structurer le driver du CODEC :
+
+```c
+/Core/Src/sgtl5000.c
+/Core/Inc/sgtl5000.h
+```
+
+#### 3.2.7 Fonction d’initialisation du CODEC
+
+Dans sgtl5000.c, nous avons créé une fonction dédiée :
+
 
 
