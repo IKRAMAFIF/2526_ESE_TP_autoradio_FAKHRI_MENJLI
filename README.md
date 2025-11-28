@@ -249,6 +249,7 @@ led_driver_t drv_led;
 Pour répondre à cette question, nous avons créé une fonction shell permettant de contrôler une LED le périphérique GPIO Expander MCP23S17 via une commande shell.
 
 A 2 1 → LED A2 ON
+
 A 1 0 → LED A1 OFF
 
 ![Driver](assets/Driver.jpeg)
@@ -309,14 +310,52 @@ Les interruptions du SAI sont ensuite activées pour gérer :
 - La réception des samples audio
 - L’envoi automatique via DMA
 
+![DMA_SAI_Config](assets/DMA_SAI_Config.jpeg)
+ 
+### 3.2 Configuration du CODEC SGTL5000 via I2C
+
+Dans cette partie, nous vérifions la communication entre le STM32 et le CODEC audio SGTL5000 grâce au protocole I2C, ainsi que la présence de l’horloge MCLK indispensable au fonctionnement du CODEC.
+
+#### 3.2.1 Vérification de l’horloge MCLK via oscilloscope
+
+Le CODEC ne peut pas fonctionner sans une horloge fournie par le SAI2.
+
+Nous avons mesuré MCLK à l’oscilloscope :
+
+![MCLK_Oscillo](assets/MCLK_Oscillo.jpeg)
+
+Résultat obtenu : ~12.26 MHz, conforme à la valeur attendue après configuration du PLLSAI.
+
+#### 3.2.2 Lecture du registre CHIP_ID via I2C
+
+Nous utilisons la fonction HAL_I2C_Mem_Read() pour lire le registre CHIP_ID (0x0000) du SGTL5000.
+
+L’adresse I2C du CODEC est 0x14.
+
+**Voici le code utilisé :**
+
+![CHIP_ID_CODEl](assets/CHIP_ID_CODE.jpeg)
+
+**Résultat dans le terminal :**
+
+![CHIP_ID_Terminal](assets/CHIP_ID_Terminal.jpeg)
 
 
+#### 3.2.3 Observation des trames I2C à l’oscilloscope
 
+Nous avons ensuite visualisé les trames I2C afin de confirmer :
 
+- la présence du Start condition
 
+- l’adresse du CODEC 0x14
 
+- l’accès en mode lecture
 
+- le retour des données sur SDA
 
+**Trames I2C observées :**
+
+![I2C_Trames](assets/I2C_Trames.jpeg)
 
 
 
