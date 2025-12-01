@@ -23,11 +23,6 @@ Le BSP n’a pas été utilisé, conformément aux consignes.
 Nous avons validé la configuration GPIO en effectuant un clignotement simple :
 
 ```c
-int __io_putchar(int ch)
-{
-  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-  return ch;
-}
 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 HAL_Delay(500);
 
