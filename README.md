@@ -407,7 +407,7 @@ SGTL5000: Initialization complete.
 
 confirmant que le CODEC est bien configuré et opérationnel.
 
-## 3.3 Signaux I2S
+### 3.3 Signaux I2S
 
 #### 3.3.1 Démarrage de la réception et transmission I2S avec DMA
 
@@ -438,8 +438,20 @@ En particulier, nous avons vérifié la présence des signaux :
 
 ![I2S SCLK](assets/I2S_SCLK.jpeg)
 
+### 3.4 Génération de signal audio
+
+L’objectif de cette section est de générer un **signal triangulaire** puis de l’observer à l’oscilloscope via la sortie audio du CODEC SGTL5000.
+
+#### 3.4.1 Génération d’un signal triangulaire
+
+Un buffer audio a été rempli avec une onde triangulaire simple :
 
 
+#### 3.4.2 Vérification à l’oscilloscope
+
+Un signal triangulaire stable a été observé sur la sortie LINE-OUT du CODEC.
+
+![Signal triangulaire](assets/Signal_Triangulaire.jpeg)
 
 
 
