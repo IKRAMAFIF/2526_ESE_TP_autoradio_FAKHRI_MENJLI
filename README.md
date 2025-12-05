@@ -23,11 +23,6 @@ Le BSP n’a pas été utilisé, conformément aux consignes.
 Nous avons validé la configuration GPIO en effectuant un clignotement simple :
 
 ```c
-int __io_putchar(int ch)
-{
-  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-  return ch;
-}
 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 HAL_Delay(500);
 
@@ -398,7 +393,65 @@ Deux fichiers ont été ajoutés afin de structurer le driver du CODEC :
 
 #### 3.2.7 Fonction d’initialisation du CODEC
 
-Dans sgtl5000.c, nous avons créé une fonction dédiée :
+Dans sgtl5000.c, nous avons créé une fonction dédiée.
+
+#### 3.2.8 Écriture des registres du CODEC via I2C
+
+Résultat obtenu sur le terminal (preuve que chaque registre a été configuré correctement) :
+
+![Initialisation](assets/Initialisation.jpeg)
+
+L’initialisation se termine par : SGTL5000: Initialization complete, confirmant que le CODEC est bien configuré et opérationnel.
+
+### 3.3 Signaux I2S
+
+#### 3.3.1 Démarrage de la réception et transmission I2S avec DMA
+
+Pour activer le flux audio du CODEC, nous avons commencé par créer deux buffers I2S :
+
+![I2S Buffers](assets/I2S_Buffers.jpeg)
+
+Ces buffers permettent :
+
+la réception des échantillons audio (sai_rx_buffer),
+
+la transmission vers le DAC (sai_tx_buffer),
+
+la mise en place du traitement temps réel.
 
 
+#c
+### 3.4 Génération de signal audio
 
+L’objectif de cette section est de générer un **signal triangulaire** puis de l’observer à l’oscilloscope via la sortie audio du CODEC SGTL5000.
+
+#### 3.4.1 Génération d’un signal triangulaire
+
+Un buffer audio a été rempli avec une onde triangulaire simple.
+
+#### 3.4.2 Vérification à l’oscilloscope
+
+Un signal triangulaire stable a été observé sur la sortie LINE-OUT du CODEC.
+
+![Signal triangulaire](assets/Signal_Triangulaire.jpeg)
+
+### 3.5 Bypass numérique
+
+L’objectif de cette partie est de réaliser un **bypass numérique** : les échantillons provenant de l’ADC du SGTL5000 sont récupérés via l’interface I2S, puis immédiatement renvoyés vers le DAC sans aucun traitement.  
+Le signal d’entrée (LINE-IN) doit ainsi ressortir directement sur la sortie audio.
+
+#### 3.5.1 Implémentation du bypass
+
+Le STM32 reçoit les données audio via le DMA du SAI2 Block B (RX).  
+À chaque interruption (`HalfCplt` et `Cplt`), les échantillons reçus sont copiés dans le buffer de transmission du SAI2 Block A (TX).
+
+Le code suivant réalise la copie directe RX → TX :
+![Bypass code](assets/Bypass_code.jpeg)
+
+
+#### 3.5.2 Vérification à l’oscilloscope
+
+L’oscilloscope montre que la forme d’onde en sortie du CODEC est identique à celle appliquée en entrée LINE-IN.
+Le bypass numérique fonctionne correctement : aucune distorsion ni délai perceptible n’a été observé.
+
+![Bypass osc](assets/Bypass_osc.jpeg)
