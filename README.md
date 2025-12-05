@@ -407,6 +407,47 @@ SGTL5000: Initialization complete.
 
 confirmant que le CODEC est bien configuré et opérationnel.
 
+## 3.3 Signaux I2S
+
+### #### 3.3.1 Démarrage de la réception et transmission I2S avec DMA
+
+Pour activer le flux audio du CODEC, nous avons commencé par créer deux buffers I2S :
+
+![I2S Buffers](assets/I2S_Buffers.jpeg)
+
+Ces buffers permettent :
+
+la réception des échantillons audio (sai_rx_buffer),
+
+la transmission vers le DAC (sai_tx_buffer),
+
+la mise en place du traitement temps réel.
+
+
+#### 3.3.2 Observation des signaux I2S à l’oscilloscope
+
+Une fois la transmission et réception DMA activées, nous avons observé les signaux I2S à l’oscilloscope.
+
+En particulier, nous avons vérifié la présence des signaux :
+
+**MCLK — Master Clock**
+
+![I2S MCLK](assets/I2S_MCLK.jpeg)
+
+**SCLK — Serial Clock**
+
+![I2S SCLK](assets/I2S_SCLK.jpeg)
+
+**FS — Frame Sync (LRCLK)**
+
+![I2S FS(assets/I2S_FS.jpeg)
+
+**SD — Serial Data**
+
+![I2S SD](I2S_SD.jpeg)
+
+
+
 
 
 
