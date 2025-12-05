@@ -409,7 +409,7 @@ confirmant que le CODEC est bien configuré et opérationnel.
 
 ## 3.3 Signaux I2S
 
-### #### 3.3.1 Démarrage de la réception et transmission I2S avec DMA
+#### 3.3.1 Démarrage de la réception et transmission I2S avec DMA
 
 Pour activer le flux audio du CODEC, nous avons commencé par créer deux buffers I2S :
 
@@ -438,13 +438,6 @@ En particulier, nous avons vérifié la présence des signaux :
 
 ![I2S SCLK](assets/I2S_SCLK.jpeg)
 
-**FS — Frame Sync (LRCLK)**
-
-![I2S FS(assets/I2S_FS.jpeg)
-
-**SD — Serial Data**
-
-![I2S SD](I2S_SD.jpeg)
 
 
 
